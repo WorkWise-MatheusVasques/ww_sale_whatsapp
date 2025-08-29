@@ -14,7 +14,6 @@ services:
       - USER=odoo
       - HOST=db
       - PORT=5432
-    command: --
 
   db:
     image: postgres:15
@@ -26,12 +25,10 @@ services:
       - db-data:/var/lib/postgresql/data
 
   waha:
-    # IMAGEM CORRIGIDA AQUI
     image: devlikeapro/waha
     ports:
       - "4000:3000"
     environment:
-      # Adicione a sua API Key aqui se o WAHA a exigir
       - WAHA_PLUS_API_KEY=sua-api-key-secreta
     volumes:
       - waha-sessions:/sessions

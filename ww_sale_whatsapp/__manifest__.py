@@ -7,9 +7,10 @@
     "depends": [
         "base",
         "base_setup",
-        "sale_management",
+        "sale_management", # Adicionado
         "purchase",
         "mail",
+        "sale_purchase",   # Adicionado
     ],
     "data": [
         "security/ir.model.access.csv",
