@@ -9,8 +9,7 @@
         <button name="action_open_whatsapp_wizard"
                 type="object"
                 string="Enviar por WhatsApp"
-                class="oe_highlight"
-                invisible="[('state', 'in', ['draft', 'sent', 'to approve', 'purchase', 'done', 'cancel'])]"/>
+                class="oe_highlight"/>
       </xpath>
     </field>
   </record>

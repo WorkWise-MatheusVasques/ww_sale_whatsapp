@@ -2,7 +2,7 @@
 <odoo noupdate="0">
   <record id="param_waha_base" model="ir.config_parameter">
     <field name="key">waha.base_url</field>
-    <field name="value">http://10.1.100.10:4000</field>
+    <field name="value">http://waha:300</field>
   </record>
   <record id="param_waha_key" model="ir.config_parameter">
     <field name="key">waha.api_key</field>

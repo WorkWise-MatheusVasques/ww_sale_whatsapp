@@ -4,8 +4,8 @@ FROM odoo:18.0
 # Mude para o usuário root para instalar pacotes
 USER root
 
-# Instala a biblioteca 'requests' que é uma dependência do módulo customizado
-RUN pip3 install requests
+# Instala a biblioteca 'requests', adicionando a flag para contornar a proteção do ambiente
+RUN pip3 install requests --break-system-packages
 
 # Copia o módulo customizado para o diretório de addons do Odoo no contêiner
 COPY ./ww_sale_whatsapp /mnt/extra-addons/ww_sale_whatsapp
