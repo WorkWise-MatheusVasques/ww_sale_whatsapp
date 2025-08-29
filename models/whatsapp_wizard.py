@@ -140,25 +140,32 @@ class WhatsappCompose(models.TransientModel):
     # ---------------- PDF (defensivo) ----------------
     @api.model
     def _render_main_pdf_for(self, res_model, res_id):
-        """Gera o PDF do registro de origem (Odoo 17)."""
-        if res_model != "sale.order":
+        """Gera o PDF do registro de origem."""
+        if res_model == "sale.order":
+            report_ref = "sale.action_report_saleorder"
+            report_name_fallback = "sale.report_saleorder"
+            record = self.env["sale.order"].browse(res_id)
+            filename = f"Pedido_{(record.name or 'pedido').replace('/', '_')}.pdf"
+
+        elif res_model == "purchase.order":
+            report_ref = "purchase.action_report_purchase_order"
+            report_name_fallback = "purchase.report_purchaseorder"
+            record = self.env["purchase.order"].browse(res_id)
+            filename = f"Pedido_Compra_{(record.name or 'pedido').replace('/', '_')}.pdf"
+        else:
             raise UserError(_("Modelo não suportado: %s") % res_model)
 
         # tenta pelo XML-ID e cai para o nome técnico
-        report = self.env.ref("sale.action_report_saleorder", raise_if_not_found=False)
+        report = self.env.ref(report_ref, raise_if_not_found=False)
         if not report or not report.exists():
-            report = self.env["ir.actions.report"]._get_report_from_name("sale.report_saleorder")
+            report = self.env["ir.actions.report"]._get_report_from_name(report_name_fallback)
         if not report or not report.exists():
-            raise UserError(_("Relatório de Pedido de Venda ausente (verifique apps 'sale'/'sale_management')."))
+            raise UserError(_("Relatório para %s ausente.") % res_model)
 
-        # assinatura compatível com Odoo 17 (override de account)
         pdf_bytes, _fmt = report._render_qweb_pdf(
-            report.report_name,   # report_ref
-            [res_id],             # lista de ids
+            report.report_name,
+            [res_id],
         )
-
-        sale = self.env["sale.order"].browse(res_id)
-        filename = f"Pedido_{(sale.name or 'pedido').replace('/', '_')}.pdf"
         return filename, pdf_bytes
 
     # ---------------- defaults ----------------
@@ -166,41 +173,26 @@ class WhatsappCompose(models.TransientModel):
     def default_get(self, fields_list):
         vals = super().default_get(fields_list)
 
-        # registro ativo
-        res_model = (
-            self.env.context.get("active_model")
-            or vals.get("res_model")
-            or self.env.context.get("default_res_model")
-        )
-        res_id = (
-            self.env.context.get("active_id")
-            or vals.get("res_id")
-            or self.env.context.get("default_res_id")
-        )
+        res_model = self.env.context.get("active_model") or vals.get("res_model")
+        res_id = self.env.context.get("active_id") or vals.get("res_id")
         if not res_id and self.env.context.get("active_ids"):
             res_id = self.env.context["active_ids"][0]
 
         # ---- Fallbacks visíveis no wizard ----
-        # partner_id: default_partner_id -> sale.order.partner_id
         if not vals.get("partner_id"):
             pid = self.env.context.get("default_partner_id")
-            if not pid and res_model == "sale.order" and res_id:
-                pid = self.env["sale.order"].browse(res_id).partner_id.id
+            if not pid and res_model in ["sale.order", "purchase.order"] and res_id:
+                pid = self.env[res_model].browse(res_id).partner_id.id
             if pid:
                 vals["partner_id"] = pid
 
-        # phone/message vindos do contexto, se existirem
         if not vals.get("phone"):
-            ph = self.env.context.get("default_phone")
-            if ph:
-                vals["phone"] = ph
+            vals["phone"] = self.env.context.get("default_phone")
         if not vals.get("message"):
-            msg = self.env.context.get("default_message")
-            if msg:
-                vals["message"] = msg
+            vals["message"] = self.env.context.get("default_message")
 
-        # ---- Anexo automático do PDF (como no e-mail) ----
-        if res_model == "sale.order" and res_id:
+        # ---- Anexo automático do PDF ----
+        if res_model in ["sale.order", "purchase.order"] and res_id:
             filename, pdf_bytes = self._render_main_pdf_for(res_model, res_id)
             Attachment = self.env["ir.attachment"].sudo()
             attach = Attachment.search([
@@ -225,7 +217,6 @@ class WhatsappCompose(models.TransientModel):
         except Exception:
             pass
 
-        # persiste res_model/res_id no wizard
         if res_model:
             vals["res_model"] = res_model
         if res_id:
@@ -245,13 +236,11 @@ class WhatsappCompose(models.TransientModel):
 
         cfg = self._cfg()
 
-        # aceita chatId direto (@c.us/@g.us) ou resolve via check-exists
         if "@c.us" in to_input or "@g.us" in to_input:
             chat_id = to_input
         else:
             chat_id = self._waha_check_exists(cfg, self._sanitize_phone(to_input))
 
-        # garante anexo (se o usuário removeu, renderiza novamente)
         attach = self.attachment_ids[:1]
         if not attach or not attach.datas:
             filename, pdf_bytes = self._render_main_pdf_for(self.res_model, self.res_id)
@@ -259,19 +248,17 @@ class WhatsappCompose(models.TransientModel):
             Attachment = self.env["ir.attachment"].sudo()
             attach = Attachment.create({
                 "name": filename,
-                "datas": data_b64,                 # sempre str base64
+                "datas": data_b64,
                 "mimetype": "application/pdf",
                 "res_model": self.res_model,
                 "res_id": self.res_id,
             })
         else:
             filename = attach.name
-            data_b64 = _to_b64_str(attach.datas)  # garante str base64
-            # garante mimetype coerente
+            data_b64 = _to_b64_str(attach.datas)
             if not (attach.mimetype or "").startswith("application/"):
                 attach.write({"mimetype": "application/pdf"})
 
-        # envia SEMPRE como arquivo (sendFile + base64)
         self._waha_send_file_data(
             cfg, chat_id, filename, data_b64, self.message, mimetype=attach.mimetype or "application/pdf"
         )

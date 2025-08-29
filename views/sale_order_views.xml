@@ -10,7 +10,7 @@
                 type="object"
                 string="Enviar por WhatsApp"
                 class="oe_highlight"
-                invisible="state not in ['sale', 'sent', 'done']"/>
+                invisible="[('state', 'not in', ['sale', 'sent', 'done'])]"/>
       </xpath>
     </field>
   </record>
