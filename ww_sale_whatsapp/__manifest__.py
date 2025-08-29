@@ -5,20 +5,19 @@
     "author": "Você",
     "license": "LGPL-3",
     "depends": [
-        "base",
         "base_setup",
-        "sale_management", # Adicionado
+        "sale_management",
         "purchase",
         "mail",
-        "sale_purchase",   # Adicionado
+        "sale_purchase",
     ],
     "data": [
         "security/ir.model.access.csv",
+        "data/params.xml", # Movido para cima
         "views/sale_order_views.xml",
         "views/purchase_order_views.xml",
         "views/whatsapp_wizard_views.xml",
         "views/res_config_settings_view.xml",
-        "data/params.xml",
     ],
     "installable": True,
     "application": False,
