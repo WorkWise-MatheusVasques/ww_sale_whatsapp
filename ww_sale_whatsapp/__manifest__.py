@@ -1,18 +1,18 @@
 {
     "name": "Integração WhatsApp (WAHA)",
-    "version": "18.0.1.0.0",
+    "version": "18.0.3.0.0", # Versão final
     "summary": "Envia pedidos de venda e compra por WhatsApp usando a API do WAHA.",
     "author": "Seu Nome",
     "license": "LGPL-3",
     "category": "Sales",
     "depends": [
-        "base_setup",
+        "account", # Dependência ESSENCIAL para relatórios e views
         "sale_management",
         "purchase",
     ],
     "data": [
         "security/ir.model.access.csv",
-        "views/res_config_settings_view.xml",  # Corrigido
+        "views/whatsapp_settings_views.xml", # Novo arquivo de menu
         "views/whatsapp_wizard_views.xml",
         "views/sale_order_views.xml",
         "views/purchase_order_views.xml",

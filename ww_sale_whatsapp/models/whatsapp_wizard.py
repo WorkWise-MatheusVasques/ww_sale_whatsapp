@@ -13,9 +13,7 @@ class WhatsappWizard(models.TransientModel):
 
     phone = fields.Char(string="Telefone", required=True)
     message = fields.Text(string="Mensagem", required=True)
-    attachment_ids = fields.Many2many(
-        'ir.attachment', string="Anexos"
-    )
+    attachment_ids = fields.Many2many('ir.attachment', string="Anexos")
     res_model = fields.Char('Modelo do Documento', readonly=True)
     res_id = fields.Integer('ID do Documento', readonly=True)
 
@@ -43,7 +41,6 @@ class WhatsappWizard(models.TransientModel):
                     report_action = self.env.ref('purchase.action_report_purchase_order')
 
                 if report_action:
-                    # No Odoo 18, a função _render_qweb_pdf retorna 2 valores
                     pdf_content, _file_format = report_action._render_qweb_pdf(record.id)
                     
                     attachment = self.env['ir.attachment'].create({
@@ -63,7 +60,6 @@ class WhatsappWizard(models.TransientModel):
         return res
 
     def action_send_whatsapp(self):
-        # Esta função permanece a mesma que já tínhamos
         self.ensure_one()
         config = self.env['ir.config_parameter'].sudo()
         base_url = config.get_param('whatsapp_integration.waha_base_url')
@@ -71,7 +67,7 @@ class WhatsappWizard(models.TransientModel):
         session = config.get_param('whatsapp_integration.waha_session')
 
         if not base_url or not session:
-            raise UserError(_("Configure a URL e a Sessão do WAHA nas Configurações do WhatsApp."))
+            raise UserError(_("Configure a URL e a Sessão do WAHA nas Configurações."))
 
         attachment = self.attachment_ids[0] if self.attachment_ids else None
         if not attachment:
