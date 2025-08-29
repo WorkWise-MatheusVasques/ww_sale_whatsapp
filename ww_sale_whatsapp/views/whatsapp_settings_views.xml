@@ -1,38 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="res_config_settings_view_form_inherit_whatsapp" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.inherit.whatsapp</field>
+    <record id="view_whatsapp_config_settings" model="ir.ui.view">
+        <field name="name">whatsapp.config.settings.view.form</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@data-key='sale_management']" position="after">
-                <div class="app_settings_block" data-string="WhatsApp" string="WhatsApp" data-key="ww_sale_whatsapp">
-                    <h2>Configuração da API do WAHA</h2>
-                    <div class="row mt16 o_settings_container">
-                        <div class="col-12 col-lg-6 o_setting_box">
-                            <div class="o_setting_right_pane">
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <label for="waha_base_url" class="col-lg-3 o_light_label"/>
-                                        <field name="waha_base_url"/>
+            <form string="Configurações do WhatsApp" class="o_res_config_form">
+                <sheet>
+                    <div class="app_settings_block" data-string="WhatsApp" string="WhatsApp" data-key="ww_sale_whatsapp">
+                        <h2>Configuração da API do WAHA</h2>
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <div class="content-group">
+                                        <div class="row mt16">
+                                            <label for="waha_base_url" class="col-lg-3 o_light_label"/>
+                                            <field name="waha_base_url"/>
+                                        </div>
+                                        <div class="row">
+                                            <label for="waha_api_key" class="col-lg-3 o_light_label"/>
+                                            <field name="waha_api_key" password="True"/>
+                                        </div>
+                                        <div class="row">
+                                            <label for="waha_session" class="col-lg-3 o_light_label"/>
+                                            <field name="waha_session"/>
+                                        </div>
                                     </div>
-                                    <div class="row">
-                                        <label for="waha_api_key" class="col-lg-3 o_light_label"/>
-                                        <field name="waha_api_key" password="True"/>
+                                    <div class="mt16">
+                                        <button name="action_test_waha_connection" string="Testar Conexão" type="object" class="oe_highlight"/>
                                     </div>
-                                    <div class="row">
-                                        <label for="waha_session" class="col-lg-3 o_light_label"/>
-                                        <field name="waha_session"/>
-                                    </div>
-                                </div>
-                                <div class="mt16">
-                                    <button name="action_test_waha_connection" string="Testar Conexão" type="object" class="oe_highlight"/>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </xpath>
+                </sheet>
+            </form>
         </field>
     </record>
+
+    <record id="action_whatsapp_config_settings" model="ir.actions.act_window">
+        <field name="name">Configurações do WhatsApp</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="view_whatsapp_config_settings"/>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'ww_sale_whatsapp'}</field>
+    </record>
+
+    <menuitem id="menu_whatsapp_config"
+              name="WhatsApp"
+              parent="base.menu_administration"
+              action="action_whatsapp_config_settings"
+              sequence="99"/>
 </odoo>
