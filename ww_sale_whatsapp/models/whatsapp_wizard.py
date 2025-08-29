@@ -41,7 +41,8 @@ class WhatsappWizard(models.TransientModel):
                     report_action = self.env.ref('purchase.action_report_purchase_order')
 
                 if report_action:
-                    pdf_content, _file_format = report_action._render_qweb_pdf(record.id)
+                    # ALTERAÇÃO AQUI: Passamos o ID dentro de uma lista [record.id]
+                    pdf_content, _file_format = report_action._render_qweb_pdf([record.id])
                     
                     attachment = self.env['ir.attachment'].create({
                         'name': f"{record.name}.pdf",
