@@ -1,0 +1,51 @@
+services:
+  # Serviço do Odoo
+  odoo:
+    build: .
+    container_name: odoo_whatsapp
+    depends_on:
+      - db
+      - waha
+    ports:
+      - "8069:8069" # Porta do Odoo
+    volumes:
+      # Mapeia o arquivo de configuração
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      # Mapeia a pasta do seu módulo customizado
+      - ./ww_sale_whatsapp:/mnt/extra-addons/ww_sale_whatsapp
+      # Volume para persistir os dados do Odoo (anexos, etc.)
+      - odoo-data:/var/lib/odoo
+    restart: unless-stopped
+
+  # Serviço do Banco de Dados
+  db:
+    image: postgres:16
+    container_name: postgres_whatsapp
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo # Mude isso em produção!
+    volumes:
+      # Volume para persistir os dados do banco
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Serviço do WAHA (WhatsApp HTTP API)
+  waha:
+    image: devlikeapro/waha
+    container_name: waha_server
+    ports:
+      - "3000:3000" # Porta da API do WAHA
+    environment:
+      # Defina aqui a mesma API Key que você vai configurar no Odoo
+      - WAHA_PLUS_API_KEY=sua-api-key-secreta
+    volumes:
+      # Volume para persistir as sessões do WhatsApp
+      - waha-sessions:/sessions
+    restart: unless-stopped
+
+# Declaração dos volumes
+volumes:
+  odoo-data:
+  db-data:
+  waha-sessions:

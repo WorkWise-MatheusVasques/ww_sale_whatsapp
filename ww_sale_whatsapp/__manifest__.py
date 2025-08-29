@@ -12,7 +12,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
-        "views/res_config_settings_view.xml",
+        "views/res_config_settings_view.xml",  # Corrigido
         "views/whatsapp_wizard_views.xml",
         "views/sale_order_views.xml",
         "views/purchase_order_views.xml",
